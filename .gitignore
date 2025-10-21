@@ -8,7 +8,7 @@ node_modules/
 
 # Production
 /build
-/dist
+dist
 
 # Environment variables (keep .env files private, but allow .env.example)
 .env

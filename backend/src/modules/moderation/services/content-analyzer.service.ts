@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { ChatOpenAI } from "@langchain/openai";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { AIProvider } from "../../../common/constants";
 import { AnalysisResult } from "../interfaces";
 
@@ -119,9 +119,29 @@ export class ContentAnalyzerService {
 
     const model = this.gemini.getGenerativeModel({
       model: "gemini-flash-latest",
+      // Configure safety settings to allow analysis of potentially harmful content
+      // since this is a moderation system that NEEDS to analyze such content
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_NONE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_NONE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_NONE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_NONE,
+        },
+      ],
     });
     const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     const text = response.text();
 
     // Gemini sometimes wraps JSON in markdown, so clean it
