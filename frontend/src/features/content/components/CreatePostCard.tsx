@@ -16,11 +16,10 @@ import { CONTENT_TYPES } from "@/config/constants";
 import type { ContentType } from "@/shared/types";
 
 interface CreatePostCardProps {
-  userId: string;
   onPostCreated: (id: string) => void;
 }
 
-export function CreatePostCard({ userId, onPostCreated }: CreatePostCardProps) {
+export function CreatePostCard({ onPostCreated }: CreatePostCardProps) {
   const [contentType, setContentType] = useState<ContentType>(
     CONTENT_TYPES.TEXT
   );
@@ -182,7 +181,6 @@ export function CreatePostCard({ userId, onPostCreated }: CreatePostCardProps) {
       }
 
       const response = await submitContent({
-        userId,
         contentType:
           contentType === CONTENT_TYPES.IMAGE
             ? CONTENT_TYPES.IMAGE

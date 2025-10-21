@@ -17,6 +17,10 @@ export class DatabaseService {
     const supabaseUrl = this.configService.get<string>('supabase.url');
     const supabaseKey = this.configService.get<string>('supabase.key');
 
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase URL and key are required');
+    }
+
     this.supabase = createClient(supabaseUrl, supabaseKey);
     this.logger.log('Database service initialized');
   }

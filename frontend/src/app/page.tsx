@@ -130,7 +130,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Create Post Card */}
-        <CreatePostCard userId={user.id} onPostCreated={handlePostCreated} />
+        <CreatePostCard onPostCreated={handlePostCreated} />
 
         {/* Feed Loading */}
         {feedLoading && (

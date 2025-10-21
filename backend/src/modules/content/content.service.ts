@@ -20,34 +20,39 @@ export class ContentService {
     this.logger.log('Content service initialized');
   }
 
-  async submitContent(submitDto: SubmitContentDto): Promise<SubmitResponseDto> {
-    this.logger.log(`Submitting content for user: ${submitDto.userId}`);
+  async submitContent(userId: string, submitDto: SubmitContentDto): Promise<SubmitResponseDto> {
+    this.logger.log(`Submitting content for authenticated user: ${userId}`);
 
-    // Create submission in database
-    const submission = await this.databaseService.createSubmission({
-      userId: submitDto.userId,
-      contentType: submitDto.contentType,
-      contentText: submitDto.contentText,
-      contentUrl: submitDto.contentUrl,
-    });
+    try {
+      // Create submission in database using authenticated user ID
+      const submission = await this.databaseService.createSubmission({
+        userId: userId, // From JWT token, not request body
+        contentType: submitDto.contentType,
+        contentText: submitDto.contentText,
+        contentUrl: submitDto.contentUrl,
+      });
 
-    // Log submission
-    await this.databaseService.createAuditLog(
-      submission.id,
-      AuditLogAction.SUBMISSION_CREATED,
-      { contentType: submitDto.contentType },
-    );
+      // Log submission
+      await this.databaseService.createAuditLog(
+        submission.id,
+        AuditLogAction.SUBMISSION_CREATED,
+        { contentType: submitDto.contentType },
+      );
 
-    // Start moderation process (async)
-    this.processModeration(submission.id, submitDto).catch((error) => {
-      this.logger.error(`Moderation processing failed for ${submission.id}`, error);
-    });
+      // Start moderation process (async)
+      this.processModeration(submission.id, submitDto).catch((error) => {
+        this.logger.error(`Moderation processing failed for ${submission.id}`, error);
+      });
 
-    return {
-      submissionId: submission.id,
-      status: SubmissionStatus.PENDING,
-      message: 'Content submitted for moderation',
-    };
+      return {
+        submissionId: submission.id,
+        status: SubmissionStatus.PENDING,
+        message: 'Content submitted for moderation',
+      };
+    } catch (error) {
+      this.logger.error('Failed to submit content', error);
+      throw error;
+    }
   }
 
   private async processModeration(
@@ -106,7 +111,7 @@ export class ContentService {
         submissionId,
         AuditLogAction.MODERATION_ERROR,
         {
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
         },
       );
     }

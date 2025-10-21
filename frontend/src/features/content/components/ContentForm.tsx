@@ -2,75 +2,77 @@
  * Content submission form component
  */
 
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import { useContentSubmission } from '../hooks/useContentSubmission';
-import { Button, Alert } from '@/shared/components';
-import { Input } from '@/shared/components/ui/inputs';
-import { CONTENT_TYPES } from '@/config/constants';
-import type { ContentType } from '@/shared/types';
+import { useState, FormEvent } from "react";
+import { useContentSubmission } from "../hooks/useContentSubmission";
+import { Button, Alert } from "@/shared/components";
+import { Input } from "@/shared/components/ui/inputs";
+import { CONTENT_TYPES } from "@/config/constants";
+import type { ContentType } from "@/shared/types";
 
 interface ContentFormProps {
-  userId: string;
   onSubmissionCreated: (id: string) => void;
 }
 
-export function ContentForm({ userId, onSubmissionCreated }: ContentFormProps) {
-  const [contentType, setContentType] = useState<ContentType>(CONTENT_TYPES.TEXT);
-  const [contentText, setContentText] = useState('');
-  const [contentUrl, setContentUrl] = useState('');
-  const [validationError, setValidationError] = useState('');
+export function ContentForm({ onSubmissionCreated }: ContentFormProps) {
+  const [contentType, setContentType] = useState<ContentType>(
+    CONTENT_TYPES.TEXT
+  );
+  const [contentText, setContentText] = useState("");
+  const [contentUrl, setContentUrl] = useState("");
+  const [validationError, setValidationError] = useState("");
   const { loading, error, submitContent } = useContentSubmission();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setValidationError('');
+    setValidationError("");
 
     // Validate input before submission
     if (contentType === CONTENT_TYPES.TEXT) {
       const trimmedText = contentText.trim();
       if (!trimmedText) {
-        setValidationError('Please enter some content');
+        setValidationError("Please enter some content");
         return;
       }
       if (trimmedText.length > 10000) {
-        setValidationError('Content text must be less than 10,000 characters');
+        setValidationError("Content text must be less than 10,000 characters");
         return;
       }
     } else if (contentType === CONTENT_TYPES.IMAGE) {
       const trimmedUrl = contentUrl.trim();
       if (!trimmedUrl) {
-        setValidationError('Please enter an image URL');
+        setValidationError("Please enter an image URL");
         return;
       }
       // Basic URL validation
       try {
         const url = new URL(trimmedUrl);
-        if (!['http:', 'https:'].includes(url.protocol)) {
-          setValidationError('URL must start with http:// or https://');
+        if (!["http:", "https:"].includes(url.protocol)) {
+          setValidationError("URL must start with http:// or https://");
           return;
         }
       } catch {
-        setValidationError('Please enter a valid URL');
+        setValidationError("Please enter a valid URL");
         return;
       }
     }
 
     try {
       const response = await submitContent({
-        userId,
         contentType,
-        contentText: contentType === CONTENT_TYPES.TEXT ? contentText.trim() : undefined,
-        contentUrl: contentType === CONTENT_TYPES.IMAGE ? contentUrl.trim() : undefined,
+        contentText:
+          contentType === CONTENT_TYPES.TEXT ? contentText.trim() : undefined,
+        contentUrl:
+          contentType === CONTENT_TYPES.IMAGE ? contentUrl.trim() : undefined,
       });
 
       onSubmissionCreated(response.submissionId);
-      setContentText('');
-      setContentUrl('');
+      setContentText("");
+      setContentUrl("");
     } catch (err) {
       // Error is already set in the hook
-      console.error('Submission error:', err);
+      console.error("Submission error:", err);
     }
   };
 

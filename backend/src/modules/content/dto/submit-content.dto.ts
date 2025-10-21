@@ -10,11 +10,15 @@ import {
 } from 'class-validator';
 import { ContentType } from '../../../common/constants';
 
+/**
+ * DTO for content submission
+ * Note: userId is now extracted from JWT token, not from request body
+ */
 export class SubmitContentDto {
   @IsEnum(ContentType, {
     message: 'Content type must be either text or image',
   })
-  contentType: ContentType;
+  contentType!: ContentType;
 
   @ValidateIf((o) => o.contentType === ContentType.TEXT)
   @IsNotEmpty({ message: 'Content text is required for text submissions' })
@@ -31,7 +35,5 @@ export class SubmitContentDto {
   )
   contentUrl?: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'User ID is required' })
-  userId: string;
+  // userId is no longer in DTO - extracted from JWT token via @CurrentUser() decorator
 }

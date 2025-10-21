@@ -36,7 +36,6 @@ export interface AnalysisResult {
 }
 
 export interface SubmitContentDto {
-  userId: string;
   contentType: ContentType;
   contentText?: string;
   contentUrl?: string;

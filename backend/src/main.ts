@@ -4,19 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters';
 import { LoggingInterceptor } from './common/interceptors';
-import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
-    bodyParser: false, // Disable default body parser
+    bodyParser: true,
   });
-
-  // Configure custom body parser with larger limits for base64 images
-  app.use(bodyParser.json({ limit: '50mb' }));
-  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   const configService = app.get(ConfigService);
 
@@ -52,7 +47,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Start server
-  const port = configService.get<number>('port');
+  const port = configService.get<number>('port') || 3001;
   await app.listen(port);
 
   logger.log(`Application is running on: ${await app.getUrl()}`);
