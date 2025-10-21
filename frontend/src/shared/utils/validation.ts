@@ -1,31 +1,23 @@
 /**
- * Validation utility functions
+ * Validation utility functions - Simplified
  */
 
-import { MIN_PASSWORD_LENGTH } from '@/config/constants';
+import { MIN_PASSWORD_LENGTH } from "@/config/constants";
 
 /**
  * Validate email format
  */
 export function isValidEmail(email: string): boolean {
+  if (!email || email.trim() === "") return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  return emailRegex.test(email.trim());
 }
 
 /**
- * Validate password strength
+ * Validate password - simple requirements check
  */
-export function isValidPassword(password: string): {
-  isValid: boolean;
-  message?: string;
-} {
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    return {
-      isValid: false,
-      message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
-    };
-  }
-  return { isValid: true };
+export function isValidPassword(password: string): boolean {
+  return !!password && password.length >= MIN_PASSWORD_LENGTH;
 }
 
 /**

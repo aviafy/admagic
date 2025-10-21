@@ -1,5 +1,5 @@
 /**
- * Authentication service
+ * Authentication service - Simplified
  * Handles all authentication operations with Supabase
  */
 
@@ -15,45 +15,47 @@ class AuthService {
   /**
    * Sign up a new user
    */
-  async signUp(credentials: SignUpCredentials): Promise<AuthResponse> {
+  async signUp(credentials: SignUpCredentials): Promise<AuthResponse & { requiresEmailConfirmation?: boolean }> {
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: credentials.email,
+        email: credentials.email.trim().toLowerCase(),
         password: credentials.password,
-        options: {
-          emailRedirectTo: undefined,
-        },
       });
 
       if (error) {
-        return {
-          user: null,
-          error: { message: error.message, code: error.code },
-        };
+        // Make error messages more user-friendly
+        let userMessage = error.message;
+        if (error.message.includes("User already registered")) {
+          userMessage = "An account with this email already exists. Please sign in instead.";
+        } else if (error.message.includes("Password")) {
+          userMessage = "Password is too weak. Please use a stronger password.";
+        }
+        return { user: null, error: { message: userMessage } };
       }
 
       // Check if email confirmation is required
       if (data.user && !data.session) {
         return {
-          user: null,
-          error: {
-            message:
-              "Please check your email to verify your account. If you don't see the email, check your spam folder or try again later.",
-            code: "email_confirmation_required",
-          },
+          user: data.user
+            ? { id: data.user.id, email: data.user.email || "" }
+            : null,
+          error: null,
+          requiresEmailConfirmation: true,
         };
       }
 
+      // Successful signup with auto-login
       return {
         user: data.user
           ? { id: data.user.id, email: data.user.email || "" }
           : null,
         error: null,
+        requiresEmailConfirmation: false,
       };
     } catch (err: any) {
       return {
         user: null,
-        error: { message: err.message || "An unexpected error occurred" },
+        error: { message: err.message || "Failed to create account. Please try again." },
       };
     }
   }
@@ -64,22 +66,19 @@ class AuthService {
   async signIn(credentials: SignInCredentials): Promise<AuthResponse> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
+        email: credentials.email.trim().toLowerCase(),
         password: credentials.password,
       });
 
       if (error) {
-        let message = error.message;
+        // Make error messages more user-friendly
+        let userMessage = error.message;
         if (error.message.includes("Invalid login credentials")) {
-          message = "Invalid email or password. Please try again.";
+          userMessage = "Invalid email or password. Please try again.";
         } else if (error.message.includes("Email not confirmed")) {
-          message = "Please verify your email before signing in.";
+          userMessage = "Please verify your email before signing in. Check your inbox for the verification link.";
         }
-
-        return {
-          user: null,
-          error: { message, code: error.code },
-        };
+        return { user: null, error: { message: userMessage } };
       }
 
       return {
@@ -91,7 +90,7 @@ class AuthService {
     } catch (err: any) {
       return {
         user: null,
-        error: { message: err.message || "An unexpected error occurred" },
+        error: { message: err.message || "Failed to sign in. Please try again." },
       };
     }
   }
@@ -108,7 +107,7 @@ class AuthService {
       return { error: null };
     } catch (err: any) {
       return {
-        error: { message: err.message || "An unexpected error occurred" },
+        error: { message: err.message || "Failed to sign out" },
       };
     }
   }
