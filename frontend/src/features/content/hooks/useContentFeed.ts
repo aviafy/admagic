@@ -85,13 +85,17 @@ export function useContentFeed(userId: string) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log("✅ Real-time change received:", payload.eventType, payload);
+          console.log(
+            "✅ Real-time change received:",
+            payload.eventType,
+            payload
+          );
 
           if (!isMounted) return;
 
           // Handle different event types for optimistic updates
           if (payload.eventType === "INSERT" && payload.new) {
-            // Optimistically add new submission to the list
+            // Create the new post object
             const newPost: ContentSubmission = {
               id: payload.new.id,
               userId: payload.new.user_id,
@@ -104,7 +108,39 @@ export function useContentFeed(userId: string) {
               updatedAt: payload.new.updated_at,
             };
             console.log("✅ Adding new post to feed:", newPost.id);
-            setPosts((prev) => [newPost, ...prev]);
+
+            // Remove any optimistic post with matching content (to avoid duplicates)
+            // and add the real post from the database
+            setPosts((prev) => {
+              // Find and remove optimistic post with same content
+              const withoutOptimistic = prev.filter((post) => {
+                if (!post.id.startsWith("optimistic-")) return true;
+
+                // Check if this optimistic post matches the new real post
+                const textMatches =
+                  post.contentText &&
+                  newPost.contentText &&
+                  post.contentText === newPost.contentText;
+                const urlMatches =
+                  post.contentUrl &&
+                  newPost.contentUrl &&
+                  post.contentUrl === newPost.contentUrl;
+
+                if (textMatches || urlMatches) {
+                  console.log(
+                    "🔄 Replacing optimistic post",
+                    post.id,
+                    "with real post",
+                    newPost.id
+                  );
+                  return false; // Remove this optimistic post
+                }
+                return true; // Keep other optimistic posts
+              });
+
+              // Add the new real post at the beginning
+              return [newPost, ...withoutOptimistic];
+            });
           } else if (payload.eventType === "UPDATE" && payload.new) {
             // Update existing post in the list
             const updatedPost: ContentSubmission = {
@@ -118,7 +154,12 @@ export function useContentFeed(userId: string) {
               createdAt: payload.new.created_at,
               updatedAt: payload.new.updated_at,
             };
-            console.log("✅ Updating post in feed:", updatedPost.id, "Status:", updatedPost.status);
+            console.log(
+              "✅ Updating post in feed:",
+              updatedPost.id,
+              "Status:",
+              updatedPost.status
+            );
             setPosts((prev) =>
               prev.map((post) =>
                 post.id === updatedPost.id ? updatedPost : post
@@ -127,7 +168,9 @@ export function useContentFeed(userId: string) {
           } else if (payload.eventType === "DELETE" && payload.old) {
             // Remove deleted post from the list
             console.log("✅ Removing post from feed:", payload.old.id);
-            setPosts((prev) => prev.filter((post) => post.id !== payload.old.id));
+            setPosts((prev) =>
+              prev.filter((post) => post.id !== payload.old.id)
+            );
           } else {
             // Fallback: refetch all posts for any other case
             console.log("⚠️ Unknown event type, refetching all posts");
@@ -140,7 +183,9 @@ export function useContentFeed(userId: string) {
           console.log("✅ Realtime subscription active for user:", userId);
         } else if (status === "CHANNEL_ERROR") {
           console.error("❌ Realtime subscription error:", err);
-          console.error("❌ This likely means Realtime is not enabled on the content_submissions table");
+          console.error(
+            "❌ This likely means Realtime is not enabled on the content_submissions table"
+          );
           console.error("❌ Falling back to polling only");
         } else if (status === "TIMED_OUT") {
           console.error("❌ Realtime subscription timed out");
@@ -161,5 +206,39 @@ export function useContentFeed(userId: string) {
     };
   }, [userId]);
 
-  return { posts, loading, error, refetch: fetchPosts };
+  /**
+   * Add an optimistic post immediately (before backend response)
+   */
+  const addOptimisticPost = (post: ContentSubmission) => {
+    setPosts((prev) => [post, ...prev]);
+  };
+
+  /**
+   * Remove an optimistic post (if submission fails)
+   */
+  const removeOptimisticPost = (postId: string) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  };
+
+  /**
+   * Replace an optimistic post with the real one from backend
+   */
+  const replaceOptimisticPost = (
+    optimisticId: string,
+    realPost: ContentSubmission
+  ) => {
+    setPosts((prev) =>
+      prev.map((post) => (post.id === optimisticId ? realPost : post))
+    );
+  };
+
+  return {
+    posts,
+    loading,
+    error,
+    refetch: fetchPosts,
+    addOptimisticPost,
+    removeOptimisticPost,
+    replaceOptimisticPost,
+  };
 }

@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { ModerationCacheService } from "./cache/moderation-cache.service";
-import { ContentType } from "../../common/constants";
+import { ContentType, AIProvider } from "../../common/constants";
 import { ModerationResult } from "../../common/interfaces";
 export declare class ModerationService {
     private configService;
@@ -9,7 +9,7 @@ export declare class ModerationService {
     private agent;
     private costs;
     constructor(configService: ConfigService, cacheService: ModerationCacheService);
-    moderateContent(content: string, contentType: ContentType): Promise<ModerationResult>;
+    moderateContent(content: string, contentType: ContentType, preferredProvider?: AIProvider): Promise<ModerationResult>;
     getStats(): {
         cacheHitRate: string;
         estimatedCostSavings: string;

@@ -40,14 +40,14 @@ class DecisionService {
         }
     }
     buildApprovedMessage(aiProvider) {
-        return `✅ Content approved. Your content meets all community guidelines and safety standards. [AI: ${aiProvider}]`;
+        return `✅ Content approved. Your content meets all community guidelines and safety standards.`;
     }
     buildFlaggedMessage(analysisResult, aiProvider) {
         const concernsList = analysisResult.concerns?.join(", ") || "Unknown";
         const userMessage = analysisResult.detailedReason ||
             `Your content has been flagged for manual review due to potential concerns: ${concernsList}. ` +
                 `This content will be reviewed by our moderation team before publication.`;
-        return `⚠️ ${userMessage} [AI: ${aiProvider}]`;
+        return `⚠️ ${userMessage}`;
     }
     buildRejectedMessage(analysisResult, aiProvider) {
         const concerns = analysisResult.concerns || [];
@@ -56,7 +56,7 @@ class DecisionService {
         if (!userMessage) {
             userMessage = this.getViolationSpecificMessage(concerns, concernsList);
         }
-        return `❌ ${userMessage} [AI: ${aiProvider}]`;
+        return `❌ ${userMessage}`;
     }
     getViolationSpecificMessage(concerns, concernsList) {
         const concernsLower = concerns.map((c) => c.toLowerCase());

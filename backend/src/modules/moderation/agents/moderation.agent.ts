@@ -34,6 +34,10 @@ export class ModerationAgent {
     geminiKey?: string,
     preferredProvider: AIProvider = AIProvider.OPENAI
   ) {
+    this.logger.log(
+      `🏗️  [ModerationAgent] Constructor called with preferredProvider: ${preferredProvider}`
+    );
+
     const openaiModel = new ChatOpenAI({
       modelName: "gpt-3.5-turbo",
       temperature: 0,
@@ -47,12 +51,17 @@ export class ModerationAgent {
     // Initialize Gemini if key provided
     if (geminiKey) {
       this.gemini = new GoogleGenerativeAI(geminiKey);
-      this.logger.log("✅ Gemini AI initialized");
+      this.logger.log("✅ [ModerationAgent] Gemini AI initialized");
     } else {
-      this.logger.warn("⚠️ Gemini API key not provided, using OpenAI only");
+      this.logger.warn(
+        "⚠️ [ModerationAgent] Gemini API key not provided, using OpenAI only"
+      );
     }
 
     // Initialize services
+    this.logger.log(
+      `🔧 [ModerationAgent] Initializing services with preferredProvider: ${preferredProvider}`
+    );
     this.visionAnalyzer = new VisionAnalyzerService(openai, this.gemini);
     this.contentAnalyzer = new ContentAnalyzerService(
       openaiModel,
@@ -67,7 +76,7 @@ export class ModerationAgent {
     this.decisionService = new DecisionService();
 
     this.logger.log(
-      `Moderation agent initialized with preferred provider: ${preferredProvider}`
+      `✅ [ModerationAgent] Moderation agent initialized with preferred provider: ${preferredProvider}`
     );
 
     this.buildGraph();
@@ -95,7 +104,10 @@ export class ModerationAgent {
       .addNode("analyze", this.analyzeNode.bind(this))
       .addNode("classify", this.classifyNode.bind(this))
       .addNode("decide", this.decideNode.bind(this))
-      .addNode("generateVisualization", this.generateVisualizationNode.bind(this))
+      .addNode(
+        "generateVisualization",
+        this.generateVisualizationNode.bind(this)
+      )
       .addEdge("__start__", "analyze")
       .addEdge("analyze", "classify")
       .addEdge("classify", "decide")
@@ -112,7 +124,9 @@ export class ModerationAgent {
   private async analyzeNode(
     state: ModerationState
   ): Promise<Partial<ModerationState>> {
-    this.logger.debug(`Analyzing ${state.contentType} content`);
+    this.logger.log(
+      `📊 [ModerationAgent.analyzeNode] Analyzing ${state.contentType} content`
+    );
 
     // For images, try vision analysis first
     if (state.contentType === ContentType.IMAGE) {
@@ -120,8 +134,13 @@ export class ModerationAgent {
 
       if (imageUrl.startsWith("http") || imageUrl.startsWith("data:image")) {
         try {
+          this.logger.log(
+            `👁️  [ModerationAgent.analyzeNode] Using Vision Model for image`
+          );
           const visionResult = await this.visionAnalyzer.analyzeImage(imageUrl);
-          this.logger.debug("Used Vision Model for image");
+          this.logger.log(
+            "✅ [ModerationAgent.analyzeNode] Vision analysis complete - Using OpenAI"
+          );
 
           return {
             analysisResult: visionResult,
@@ -129,7 +148,7 @@ export class ModerationAgent {
           };
         } catch (error) {
           this.logger.warn(
-            "Vision analysis failed, falling back to text analysis",
+            "⚠️ [ModerationAgent.analyzeNode] Vision analysis failed, falling back to text analysis",
             error
           );
         }
@@ -137,9 +156,15 @@ export class ModerationAgent {
     }
 
     // Text/URL content analysis
+    this.logger.log(
+      `🤖 [ModerationAgent.analyzeNode] Calling ContentAnalyzer.analyze()...`
+    );
     const { result, provider } = await this.contentAnalyzer.analyze(
       state.content,
       state.contentType
+    );
+    this.logger.log(
+      `✅ [ModerationAgent.analyzeNode] Analysis complete with provider: ${provider}`
     );
 
     return {
@@ -199,9 +224,8 @@ export class ModerationAgent {
 
     // For flagged content, AI decides if visualization would help
     if (state.classification === "flagged") {
-      needsVisualization = await this.visualizationService.shouldGenerateVisualization(
-        state
-      );
+      needsVisualization =
+        await this.visualizationService.shouldGenerateVisualization(state);
     }
 
     this.logger.log(`Decision: ${decision}`);
@@ -238,9 +262,8 @@ export class ModerationAgent {
       throw new Error("Reasoning is required for visualization generation");
     }
 
-    const visualizationUrl = await this.visualizationService.generateVisualization(
-      state.reasoning
-    );
+    const visualizationUrl =
+      await this.visualizationService.generateVisualization(state.reasoning);
 
     return { visualizationUrl };
   }

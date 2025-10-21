@@ -46,7 +46,9 @@ export class DecisionService {
   /**
    * Classifies content based on analysis results
    */
-  classifyContent(analysisResult: AnalysisResult): "safe" | "flagged" | "harmful" {
+  classifyContent(
+    analysisResult: AnalysisResult
+  ): "safe" | "flagged" | "harmful" {
     if (analysisResult.isSafe) {
       return "safe";
     } else if (analysisResult.severity === "high") {
@@ -60,7 +62,7 @@ export class DecisionService {
    * Builds approval message
    */
   private buildApprovedMessage(aiProvider: AIProvider): string {
-    return `✅ Content approved. Your content meets all community guidelines and safety standards. [AI: ${aiProvider}]`;
+    return `✅ Content approved. Your content meets all community guidelines and safety standards.`;
   }
 
   /**
@@ -77,7 +79,7 @@ export class DecisionService {
       `Your content has been flagged for manual review due to potential concerns: ${concernsList}. ` +
         `This content will be reviewed by our moderation team before publication.`;
 
-    return `⚠️ ${userMessage} [AI: ${aiProvider}]`;
+    return `⚠️ ${userMessage}`;
   }
 
   /**
@@ -96,7 +98,7 @@ export class DecisionService {
       userMessage = this.getViolationSpecificMessage(concerns, concernsList);
     }
 
-    return `❌ ${userMessage} [AI: ${aiProvider}]`;
+    return `❌ ${userMessage}`;
   }
 
   /**

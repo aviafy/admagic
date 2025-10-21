@@ -1,6 +1,6 @@
-import { DatabaseService } from '../database/database.service';
-import { ModerationService } from '../moderation/moderation.service';
-import { SubmitContentDto, SubmitResponseDto, SubmissionResponseDto } from './dto';
+import { DatabaseService } from "../database/database.service";
+import { ModerationService } from "../moderation/moderation.service";
+import { SubmitContentDto, SubmitResponseDto, SubmissionResponseDto } from "./dto";
 export declare class ContentService {
     private databaseService;
     private moderationService;

@@ -8,7 +8,7 @@ import {
   IsUrl,
   Matches,
 } from 'class-validator';
-import { ContentType } from '../../../common/constants';
+import { ContentType, AIProvider } from '../../../common/constants';
 
 /**
  * DTO for content submission
@@ -34,6 +34,12 @@ export class SubmitContentDto {
     { message: 'Content URL must be a valid URL (http/https) or base64 data URL (data:image/...)' }
   )
   contentUrl?: string;
+
+  @IsOptional()
+  @IsEnum(AIProvider, {
+    message: 'AI provider must be either openai or gemini',
+  })
+  aiProvider?: AIProvider;
 
   // userId is no longer in DTO - extracted from JWT token via @CurrentUser() decorator
 }

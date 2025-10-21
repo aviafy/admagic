@@ -1,4 +1,4 @@
-import { ModerationDecision } from '../constants';
+import { ModerationDecision, AIProvider } from '../constants';
 
 export interface ModerationResult {
   decision: ModerationDecision;
@@ -6,6 +6,7 @@ export interface ModerationResult {
   classification: string[];
   analysisResult: any;
   visualizationUrl?: string; // Generated image URL for flagged content
+  aiProvider?: AIProvider; // Which AI provider was used
 }
 
 export interface AIDecision {
@@ -14,4 +15,5 @@ export interface AIDecision {
   classification: string[];
   analysisResult: any;
   visualizationUrl?: string; // Generated image URL for flagged content
+  aiProvider?: AIProvider; // Which AI provider was used
 }

@@ -1,10 +1,11 @@
-import { ModerationDecision } from '../constants';
+import { ModerationDecision, AIProvider } from '../constants';
 export interface ModerationResult {
     decision: ModerationDecision;
     reasoning: string;
     classification: string[];
     analysisResult: any;
     visualizationUrl?: string;
+    aiProvider?: AIProvider;
 }
 export interface AIDecision {
     decision: ModerationDecision;
@@ -12,4 +13,5 @@ export interface AIDecision {
     classification: string[];
     analysisResult: any;
     visualizationUrl?: string;
+    aiProvider?: AIProvider;
 }

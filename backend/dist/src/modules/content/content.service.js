@@ -20,7 +20,7 @@ let ContentService = ContentService_1 = class ContentService {
         this.databaseService = databaseService;
         this.moderationService = moderationService;
         this.logger = new common_1.Logger(ContentService_1.name);
-        this.logger.log('Content service initialized');
+        this.logger.log("Content service initialized");
     }
     async submitContent(userId, submitDto) {
         this.logger.log(`Submitting content for authenticated user: ${userId}`);
@@ -38,19 +38,22 @@ let ContentService = ContentService_1 = class ContentService {
             return {
                 submissionId: submission.id,
                 status: constants_1.SubmissionStatus.PENDING,
-                message: 'Content submitted for moderation',
+                message: "Content submitted for moderation",
             };
         }
         catch (error) {
-            this.logger.error('Failed to submit content', error);
+            this.logger.error("Failed to submit content", error);
             throw error;
         }
     }
     async processModeration(submissionId, submitDto) {
-        this.logger.log(`Processing moderation for submission: ${submissionId}`);
+        this.logger.log(`🟢 [ContentService] Processing moderation for submission: ${submissionId}`);
+        this.logger.log(`🤖 [ContentService] Requested AI provider: ${submitDto.aiProvider || "default (OpenAI)"}`);
         try {
-            const content = submitDto.contentText || submitDto.contentUrl || '';
-            const result = await this.moderationService.moderateContent(content, submitDto.contentType);
+            const content = submitDto.contentText || submitDto.contentUrl || "";
+            this.logger.log(`📤 [ContentService] Calling moderationService with provider: ${submitDto.aiProvider}`);
+            const result = await this.moderationService.moderateContent(content, submitDto.contentType, submitDto.aiProvider);
+            this.logger.log(`📥 [ContentService] Moderation result received - Decision: ${result.decision}, Used provider: ${result.aiProvider}`);
             const statusMap = {
                 [constants_1.ModerationDecision.APPROVED]: constants_1.SubmissionStatus.APPROVED,
                 [constants_1.ModerationDecision.FLAGGED]: constants_1.SubmissionStatus.FLAGGED,
@@ -65,6 +68,7 @@ let ContentService = ContentService_1 = class ContentService {
                     classification: result.classification,
                     analysisResult: result.analysisResult,
                     visualizationUrl: result.visualizationUrl,
+                    aiProvider: result.aiProvider,
                 },
             });
             await this.databaseService.createAuditLog(submissionId, constants_1.AuditLogAction.MODERATION_COMPLETED, {
@@ -76,7 +80,7 @@ let ContentService = ContentService_1 = class ContentService {
         catch (error) {
             this.logger.error(`Moderation error for ${submissionId}`, error);
             await this.databaseService.createAuditLog(submissionId, constants_1.AuditLogAction.MODERATION_ERROR, {
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: error instanceof Error ? error.message : "Unknown error",
             });
         }
     }

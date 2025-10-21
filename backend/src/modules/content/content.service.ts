@@ -1,13 +1,17 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import { ModerationService } from '../moderation/moderation.service';
-import { SubmitContentDto, SubmitResponseDto, SubmissionResponseDto } from './dto';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { DatabaseService } from "../database/database.service";
+import { ModerationService } from "../moderation/moderation.service";
+import {
+  SubmitContentDto,
+  SubmitResponseDto,
+  SubmissionResponseDto,
+} from "./dto";
 import {
   SubmissionStatus,
   AuditLogAction,
   ModerationDecision,
   ContentType,
-} from '../../common/constants';
+} from "../../common/constants";
 
 @Injectable()
 export class ContentService {
@@ -15,12 +19,15 @@ export class ContentService {
 
   constructor(
     private databaseService: DatabaseService,
-    private moderationService: ModerationService,
+    private moderationService: ModerationService
   ) {
-    this.logger.log('Content service initialized');
+    this.logger.log("Content service initialized");
   }
 
-  async submitContent(userId: string, submitDto: SubmitContentDto): Promise<SubmitResponseDto> {
+  async submitContent(
+    userId: string,
+    submitDto: SubmitContentDto
+  ): Promise<SubmitResponseDto> {
     this.logger.log(`Submitting content for authenticated user: ${userId}`);
 
     try {
@@ -36,39 +43,56 @@ export class ContentService {
       await this.databaseService.createAuditLog(
         submission.id,
         AuditLogAction.SUBMISSION_CREATED,
-        { contentType: submitDto.contentType },
+        { contentType: submitDto.contentType }
       );
 
       // Start moderation process (async)
       this.processModeration(submission.id, submitDto).catch((error) => {
-        this.logger.error(`Moderation processing failed for ${submission.id}`, error);
+        this.logger.error(
+          `Moderation processing failed for ${submission.id}`,
+          error
+        );
       });
 
       return {
         submissionId: submission.id,
         status: SubmissionStatus.PENDING,
-        message: 'Content submitted for moderation',
+        message: "Content submitted for moderation",
       };
     } catch (error) {
-      this.logger.error('Failed to submit content', error);
+      this.logger.error("Failed to submit content", error);
       throw error;
     }
   }
 
   private async processModeration(
     submissionId: string,
-    submitDto: SubmitContentDto,
+    submitDto: SubmitContentDto
   ): Promise<void> {
-    this.logger.log(`Processing moderation for submission: ${submissionId}`);
+    this.logger.log(
+      `🟢 [ContentService] Processing moderation for submission: ${submissionId}`
+    );
+    this.logger.log(
+      `🤖 [ContentService] Requested AI provider: ${
+        submitDto.aiProvider || "default (OpenAI)"
+      }`
+    );
 
     try {
       // Get content to moderate
-      const content = submitDto.contentText || submitDto.contentUrl || '';
+      const content = submitDto.contentText || submitDto.contentUrl || "";
 
-      // Run moderation agent
+      // Run moderation agent with preferred AI provider
+      this.logger.log(
+        `📤 [ContentService] Calling moderationService with provider: ${submitDto.aiProvider}`
+      );
       const result = await this.moderationService.moderateContent(
         content,
         submitDto.contentType,
+        submitDto.aiProvider
+      );
+      this.logger.log(
+        `📥 [ContentService] Moderation result received - Decision: ${result.decision}, Used provider: ${result.aiProvider}`
       );
 
       // Map decision to status
@@ -89,6 +113,7 @@ export class ContentService {
           classification: result.classification,
           analysisResult: result.analysisResult,
           visualizationUrl: result.visualizationUrl, // Store generated visualization
+          aiProvider: result.aiProvider, // Store which AI provider was used
         },
       });
 
@@ -99,11 +124,11 @@ export class ContentService {
         {
           decision: result.decision,
           reasoning: result.reasoning,
-        },
+        }
       );
 
       this.logger.log(
-        `Moderation completed for ${submissionId}: ${result.decision}`,
+        `Moderation completed for ${submissionId}: ${result.decision}`
       );
     } catch (error) {
       this.logger.error(`Moderation error for ${submissionId}`, error);
@@ -111,8 +136,8 @@ export class ContentService {
         submissionId,
         AuditLogAction.MODERATION_ERROR,
         {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
+          error: error instanceof Error ? error.message : "Unknown error",
+        }
       );
     }
   }

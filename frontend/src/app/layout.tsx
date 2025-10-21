@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/features/auth';
 import { ErrorBoundary } from '@/shared/components';
+import { LLMProviderProvider } from '@/shared/contexts/LLMProviderContext';
 import './globals.css';
 
 const geistSans = Geist({
@@ -35,7 +36,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
-          <AuthProvider>{children}</AuthProvider>
+          <LLMProviderProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </LLMProviderProvider>
         </ErrorBoundary>
       </body>
     </html>

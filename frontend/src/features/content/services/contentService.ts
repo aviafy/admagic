@@ -137,6 +137,48 @@ class ContentService {
       throw new Error("Network error. Please check your connection.");
     }
   }
+
+  /**
+   * Generate an image from text prompt using DALL-E 3
+   */
+  async generateImage(
+    prompt: string,
+    size?: "1024x1024" | "1792x1024" | "1024x1792",
+    quality?: "standard" | "hd"
+  ): Promise<{ imageUrl: string; revisedPrompt?: string }> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/content/generate-image`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ prompt, size, quality }),
+        },
+        60000 // 60 seconds timeout for image generation (can take a while)
+      );
+
+      if (!response.ok) {
+        let errorMessage = "Failed to generate image";
+
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.statusText}`;
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Network error. Please check your connection.");
+    }
+  }
 }
 
 export const contentService = new ContentService();

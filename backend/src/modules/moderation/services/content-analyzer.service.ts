@@ -15,7 +15,13 @@ export class ContentAnalyzerService {
     private readonly openaiModel: ChatOpenAI,
     private readonly gemini: GoogleGenerativeAI | null,
     private readonly preferredProvider: AIProvider
-  ) {}
+  ) {
+    this.logger.log(
+      `🔧 [ContentAnalyzer] Initialized with preferredProvider: ${preferredProvider}, Gemini available: ${
+        gemini !== null
+      }`
+    );
+  }
 
   /**
    * Analyzes text/URL content for safety and appropriateness
@@ -25,6 +31,13 @@ export class ContentAnalyzerService {
     content: string,
     contentType: string
   ): Promise<{ result: AnalysisResult; provider: AIProvider }> {
+    this.logger.log(
+      `🔍 [ContentAnalyzer.analyze] Starting analysis with preferredProvider: ${this.preferredProvider}`
+    );
+    this.logger.log(
+      `📝 [ContentAnalyzer.analyze] Gemini available: ${this.gemini !== null}`
+    );
+
     const prompt = this.buildAnalysisPrompt(content, contentType);
 
     try {
@@ -33,25 +46,49 @@ export class ContentAnalyzerService {
 
       // Try preferred provider first
       if (this.preferredProvider === AIProvider.GEMINI && this.gemini) {
+        this.logger.log(
+          `🟢 [ContentAnalyzer.analyze] Preferred provider is GEMINI, attempting Gemini analysis...`
+        );
         try {
           analysisResult = await this.analyzeWithGemini(prompt);
           usedProvider = AIProvider.GEMINI;
-          this.logger.debug("Used Gemini for analysis");
+          this.logger.log(
+            "✅ [ContentAnalyzer.analyze] Successfully used Gemini for analysis"
+          );
         } catch (error) {
-          this.logger.warn("Gemini failed, falling back to OpenAI");
+          this.logger.error(
+            `❌ [ContentAnalyzer.analyze] Gemini failed, falling back to OpenAI. Error: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+            error instanceof Error ? error.stack : undefined
+          );
           analysisResult = await this.analyzeWithOpenAI(prompt);
           usedProvider = AIProvider.OPENAI;
+          this.logger.log(
+            "✅ [ContentAnalyzer.analyze] Fallback to OpenAI successful"
+          );
         }
       } else {
+        this.logger.log(
+          `🔵 [ContentAnalyzer.analyze] Preferred provider is OPENAI or Gemini unavailable, using OpenAI...`
+        );
         try {
           analysisResult = await this.analyzeWithOpenAI(prompt);
           usedProvider = AIProvider.OPENAI;
-          this.logger.debug("Used OpenAI for analysis");
+          this.logger.log(
+            "✅ [ContentAnalyzer.analyze] Successfully used OpenAI for analysis"
+          );
         } catch (error) {
           if (this.gemini) {
-            this.logger.warn("OpenAI failed, falling back to Gemini");
+            this.logger.warn(
+              "⚠️ [ContentAnalyzer.analyze] OpenAI failed, falling back to Gemini",
+              error
+            );
             analysisResult = await this.analyzeWithGemini(prompt);
             usedProvider = AIProvider.GEMINI;
+            this.logger.log(
+              "✅ [ContentAnalyzer.analyze] Fallback to Gemini successful"
+            );
           } else {
             throw error;
           }
@@ -93,7 +130,7 @@ export class ContentAnalyzerService {
       throw new Error("Gemini not initialized");
     }
 
-    const model = this.gemini.getGenerativeModel({ model: "gemini-pro" });
+    const model = this.gemini.getGenerativeModel({ model: "gemini-flash-latest" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();

@@ -35,4 +35,11 @@ __decorate([
     (0, class_validator_1.Matches)(/^(https?:\/\/.+|data:image\/.+;base64,.+)$/, { message: 'Content URL must be a valid URL (http/https) or base64 data URL (data:image/...)' }),
     __metadata("design:type", String)
 ], SubmitContentDto.prototype, "contentUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(constants_1.AIProvider, {
+        message: 'AI provider must be either openai or gemini',
+    }),
+    __metadata("design:type", String)
+], SubmitContentDto.prototype, "aiProvider", void 0);
 //# sourceMappingURL=submit-content.dto.js.map

@@ -20,23 +20,30 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const content_service_1 = require("./content.service");
 const dto_1 = require("./dto");
+const image_generation_service_1 = require("./services/image-generation.service");
 let ContentController = ContentController_1 = class ContentController {
-    constructor(contentService) {
+    constructor(contentService, imageGenerationService) {
         this.contentService = contentService;
+        this.imageGenerationService = imageGenerationService;
         this.logger = new common_1.Logger(ContentController_1.name);
     }
     async submitContent(user, submitDto) {
-        this.logger.log(`Received content submission from authenticated user: ${user.userId}`);
+        this.logger.log(`🔵 [Controller] Received content submission from user: ${user.userId} with AI provider: ${submitDto.aiProvider || "default"}`);
+        this.logger.debug(`📦 [Controller] SubmitDto:`, JSON.stringify(submitDto));
         return await this.contentService.submitContent(user.userId, submitDto);
     }
     async getStatus(user, id) {
         this.logger.log(`User ${user.userId} checking status for submission: ${id}`);
         return await this.contentService.getSubmissionStatus(id);
     }
+    async generateImage(user, generateDto) {
+        this.logger.log(`User ${user.userId} generating image with prompt: "${generateDto.prompt.substring(0, 50)}..."`);
+        return await this.imageGenerationService.generateImage(generateDto);
+    }
 };
 exports.ContentController = ContentController;
 __decorate([
-    (0, common_1.Post)('submit'),
+    (0, common_1.Post)("submit"),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
@@ -46,18 +53,29 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ContentController.prototype, "submitContent", null);
 __decorate([
-    (0, common_1.Get)('status/:id'),
+    (0, common_1.Get)("status/:id"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, throttler_1.Throttle)({ default: { limit: 30, ttl: 60000 } }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContentController.prototype, "getStatus", null);
+__decorate([
+    (0, common_1.Post)("generate-image"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60000 } }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, dto_1.GenerateImageDto]),
+    __metadata("design:returntype", Promise)
+], ContentController.prototype, "generateImage", null);
 exports.ContentController = ContentController = ContentController_1 = __decorate([
-    (0, common_1.Controller)('content'),
+    (0, common_1.Controller)("content"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [content_service_1.ContentService])
+    __metadata("design:paramtypes", [content_service_1.ContentService,
+        image_generation_service_1.ImageGenerationService])
 ], ContentController);
 //# sourceMappingURL=content.controller.js.map

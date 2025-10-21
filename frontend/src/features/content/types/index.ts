@@ -27,6 +27,7 @@ export interface AiDecision {
   classification: "safe" | "flagged" | "harmful";
   analysisResult: AnalysisResult;
   visualizationUrl?: string; // Generated image URL for flagged content
+  aiProvider?: 'openai' | 'gemini'; // Which AI provider was used
 }
 
 export interface AnalysisResult {
@@ -39,6 +40,7 @@ export interface SubmitContentDto {
   contentType: ContentType;
   contentText?: string;
   contentUrl?: string;
+  aiProvider?: 'openai' | 'gemini';
 }
 
 export interface SubmitContentResponse {

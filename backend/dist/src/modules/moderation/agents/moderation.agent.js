@@ -15,6 +15,7 @@ class ModerationAgent {
     constructor(openaiKey, geminiKey, preferredProvider = constants_1.AIProvider.OPENAI) {
         this.logger = new common_1.Logger(ModerationAgent.name);
         this.gemini = null;
+        this.logger.log(`🏗️  [ModerationAgent] Constructor called with preferredProvider: ${preferredProvider}`);
         const openaiModel = new openai_1.ChatOpenAI({
             modelName: "gpt-3.5-turbo",
             temperature: 0,
@@ -25,16 +26,17 @@ class ModerationAgent {
         });
         if (geminiKey) {
             this.gemini = new generative_ai_1.GoogleGenerativeAI(geminiKey);
-            this.logger.log("✅ Gemini AI initialized");
+            this.logger.log("✅ [ModerationAgent] Gemini AI initialized");
         }
         else {
-            this.logger.warn("⚠️ Gemini API key not provided, using OpenAI only");
+            this.logger.warn("⚠️ [ModerationAgent] Gemini API key not provided, using OpenAI only");
         }
+        this.logger.log(`🔧 [ModerationAgent] Initializing services with preferredProvider: ${preferredProvider}`);
         this.visionAnalyzer = new services_1.VisionAnalyzerService(openai, this.gemini);
         this.contentAnalyzer = new services_1.ContentAnalyzerService(openaiModel, this.gemini, preferredProvider);
         this.visualizationService = new services_1.VisualizationService(openaiModel, openai, this.gemini);
         this.decisionService = new services_1.DecisionService();
-        this.logger.log(`Moderation agent initialized with preferred provider: ${preferredProvider}`);
+        this.logger.log(`✅ [ModerationAgent] Moderation agent initialized with preferred provider: ${preferredProvider}`);
         this.buildGraph();
     }
     buildGraph() {
@@ -64,24 +66,27 @@ class ModerationAgent {
         this.logger.log("LangGraph workflow compiled successfully");
     }
     async analyzeNode(state) {
-        this.logger.debug(`Analyzing ${state.contentType} content`);
+        this.logger.log(`📊 [ModerationAgent.analyzeNode] Analyzing ${state.contentType} content`);
         if (state.contentType === constants_1.ContentType.IMAGE) {
             const imageUrl = state.content;
             if (imageUrl.startsWith("http") || imageUrl.startsWith("data:image")) {
                 try {
+                    this.logger.log(`👁️  [ModerationAgent.analyzeNode] Using Vision Model for image`);
                     const visionResult = await this.visionAnalyzer.analyzeImage(imageUrl);
-                    this.logger.debug("Used Vision Model for image");
+                    this.logger.log("✅ [ModerationAgent.analyzeNode] Vision analysis complete - Using OpenAI");
                     return {
                         analysisResult: visionResult,
                         aiProvider: constants_1.AIProvider.OPENAI,
                     };
                 }
                 catch (error) {
-                    this.logger.warn("Vision analysis failed, falling back to text analysis", error);
+                    this.logger.warn("⚠️ [ModerationAgent.analyzeNode] Vision analysis failed, falling back to text analysis", error);
                 }
             }
         }
+        this.logger.log(`🤖 [ModerationAgent.analyzeNode] Calling ContentAnalyzer.analyze()...`);
         const { result, provider } = await this.contentAnalyzer.analyze(state.content, state.contentType);
+        this.logger.log(`✅ [ModerationAgent.analyzeNode] Analysis complete with provider: ${provider}`);
         return {
             analysisResult: result,
             aiProvider: provider,
@@ -110,7 +115,8 @@ class ModerationAgent {
         const { decision, reasoning } = this.decisionService.makeDecision(state.classification, state.analysisResult, state.aiProvider);
         let needsVisualization = false;
         if (state.classification === "flagged") {
-            needsVisualization = await this.visualizationService.shouldGenerateVisualization(state);
+            needsVisualization =
+                await this.visualizationService.shouldGenerateVisualization(state);
         }
         this.logger.log(`Decision: ${decision}`);
         return {

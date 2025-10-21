@@ -38,18 +38,35 @@ let ModerationService = ModerationService_1 = class ModerationService {
             this.logPerformanceStats();
         }, 5 * 60 * 1000);
     }
-    async moderateContent(content, contentType) {
+    async moderateContent(content, contentType, preferredProvider) {
         this.costs.totalRequests++;
-        this.logger.log(`Moderating ${contentType} content`);
+        this.logger.log(`🟣 [ModerationService] Moderating ${contentType} content with provider: ${preferredProvider || "default (OpenAI)"}`);
         try {
-            const cachedResult = await this.cacheService.get(content, contentType);
+            const cacheKey = preferredProvider
+                ? `${content}:${preferredProvider}`
+                : content;
+            const cachedResult = await this.cacheService.get(cacheKey, contentType);
             if (cachedResult) {
                 this.costs.cachedRequests++;
-                this.logger.log(`Using cached moderation result (saved AI API call)`);
+                this.logger.log(`💾 [ModerationService] Using cached moderation result (saved AI API call) - Used provider: ${cachedResult.aiProvider}`);
                 return cachedResult;
             }
             this.costs.aiRequests++;
-            const result = await this.agent.moderate(content, contentType);
+            this.logger.log(`🔧 [ModerationService] No cache hit. Creating/using agent with provider: ${preferredProvider || constants_1.AIProvider.OPENAI}`);
+            let agentToUse = this.agent;
+            if (preferredProvider && preferredProvider !== constants_1.AIProvider.OPENAI) {
+                this.logger.log(`⚡ [ModerationService] Creating NEW agent instance for provider: ${preferredProvider}`);
+                const openaiKey = this.configService.get("openai.apiKey");
+                const geminiKey = this.configService.get("gemini.apiKey");
+                agentToUse = new moderation_agent_1.ModerationAgent(openaiKey, geminiKey, preferredProvider);
+                this.logger.log(`✅ [ModerationService] New agent created with preferred provider: ${preferredProvider}`);
+            }
+            else {
+                this.logger.log(`♻️  [ModerationService] Using existing default agent (OpenAI)`);
+            }
+            this.logger.log(`🚀 [ModerationService] Calling agent.moderate()...`);
+            const result = await agentToUse.moderate(content, contentType);
+            this.logger.log(`✅ [ModerationService] Agent returned result with provider: ${result.aiProvider}`);
             if (!result.decision || !result.reasoning) {
                 throw new Error("Invalid moderation result: missing decision or reasoning");
             }
@@ -59,8 +76,9 @@ let ModerationService = ModerationService_1 = class ModerationService {
                 classification: result.classification ? [result.classification] : [],
                 analysisResult: result.analysisResult,
                 visualizationUrl: result.visualizationUrl,
+                aiProvider: result.aiProvider || preferredProvider || constants_1.AIProvider.OPENAI,
             };
-            await this.cacheService.set(content, contentType, moderationResult);
+            await this.cacheService.set(cacheKey, contentType, moderationResult);
             return moderationResult;
         }
         catch (error) {
@@ -70,8 +88,9 @@ let ModerationService = ModerationService_1 = class ModerationService {
     }
     getStats() {
         const cacheHitRate = this.costs.totalRequests > 0
-            ? ((this.costs.cachedRequests / this.costs.totalRequests) * 100).toFixed(2)
-            : '0.00';
+            ? ((this.costs.cachedRequests / this.costs.totalRequests) *
+                100).toFixed(2)
+            : "0.00";
         const estimatedCostSavings = this.costs.cachedRequests * 0.005;
         return {
             ...this.costs,

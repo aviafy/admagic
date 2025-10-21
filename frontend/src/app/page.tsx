@@ -20,6 +20,9 @@ export default function Home() {
     posts,
     loading: feedLoading,
     refetch,
+    addOptimisticPost,
+    removeOptimisticPost,
+    replaceOptimisticPost,
   } = useContentFeed(user?.id || "");
   const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,7 +33,7 @@ export default function Home() {
 
   const handlePostCreated = (id: string) => {
     setLastSubmissionId(id);
-    refetch(); // Refresh feed when new post is created
+    // REMOVED: refetch() - Let real-time subscription handle updates smoothly
   };
 
   // Note: Real-time updates are now handled by Supabase subscriptions in useContentFeed
@@ -130,7 +133,13 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Create Post Card */}
-        <CreatePostCard onPostCreated={handlePostCreated} />
+        <CreatePostCard
+          onPostCreated={handlePostCreated}
+          onOptimisticPost={addOptimisticPost}
+          onSubmissionError={removeOptimisticPost}
+          onSubmissionSuccess={replaceOptimisticPost}
+          userEmail={user.email}
+        />
 
         {/* Feed Loading */}
         {feedLoading && (
@@ -159,6 +168,7 @@ export default function Home() {
                 status={post.status}
                 aiDecision={post.aiDecision}
                 createdAt={post.createdAt}
+                isOptimistic={post.id.startsWith("optimistic-")}
               />
             ))}
           </div>

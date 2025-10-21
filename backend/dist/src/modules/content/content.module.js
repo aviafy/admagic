@@ -10,6 +10,7 @@ exports.ContentModule = void 0;
 const common_1 = require("@nestjs/common");
 const content_controller_1 = require("./content.controller");
 const content_service_1 = require("./content.service");
+const image_generation_service_1 = require("./services/image-generation.service");
 const moderation_module_1 = require("../moderation/moderation.module");
 let ContentModule = class ContentModule {
 };
@@ -18,7 +19,7 @@ exports.ContentModule = ContentModule = __decorate([
     (0, common_1.Module)({
         imports: [moderation_module_1.ModerationModule],
         controllers: [content_controller_1.ContentController],
-        providers: [content_service_1.ContentService],
+        providers: [content_service_1.ContentService, image_generation_service_1.ImageGenerationService],
     })
 ], ContentModule);
 //# sourceMappingURL=content.module.js.map
