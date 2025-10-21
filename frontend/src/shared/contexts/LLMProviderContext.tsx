@@ -28,33 +28,16 @@ export function LLMProviderProvider({ children }: { children: ReactNode }) {
   // Load from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    console.log(
-      "📂 [LLMProvider] Loading provider from localStorage:",
-      stored || "not found (using default: openai)"
-    );
     if (stored === "openai" || stored === "gemini") {
       setProviderState(stored);
-      console.log("✅ [LLMProvider] Provider set to:", stored);
-    } else {
-      console.log("ℹ️ [LLMProvider] Using default provider: openai");
     }
     setIsInitialized(true);
   }, []);
 
   // Save to localStorage when changed
   const setProvider = (newProvider: AIProvider) => {
-    console.log(
-      "🔄 [LLMProvider] Switching provider from",
-      provider,
-      "to",
-      newProvider
-    );
     setProviderState(newProvider);
     localStorage.setItem(STORAGE_KEY, newProvider);
-    console.log(
-      "✅ [LLMProvider] Provider saved to localStorage:",
-      newProvider
-    );
   };
 
   // Don't render children until we've loaded from localStorage

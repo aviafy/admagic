@@ -81,7 +81,6 @@ export function Header({ userEmail, onLogout }: HeaderProps) {
             <div className="flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => {
-                  console.log("🖱️ [Header] User clicked OpenAI button");
                   setProvider("openai");
                 }}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
@@ -102,7 +101,6 @@ export function Header({ userEmail, onLogout }: HeaderProps) {
               </button>
               <button
                 onClick={() => {
-                  console.log("🖱️ [Header] User clicked Gemini button");
                   setProvider("gemini");
                 }}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${

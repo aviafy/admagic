@@ -3,8 +3,13 @@
  * Handles all authentication operations with Supabase
  */
 
-import { supabase } from '@/config/supabase';
-import type { AuthResponse, SignUpCredentials, SignInCredentials, AuthUser } from '../types';
+import { supabase } from "@/config/supabase";
+import type {
+  AuthResponse,
+  SignUpCredentials,
+  SignInCredentials,
+  AuthUser,
+} from "../types";
 
 class AuthService {
   /**
@@ -34,21 +39,21 @@ class AuthService {
           error: {
             message:
               "Please check your email to verify your account. If you don't see the email, check your spam folder or try again later.",
-            code: 'email_confirmation_required',
+            code: "email_confirmation_required",
           },
         };
       }
 
       return {
         user: data.user
-          ? { id: data.user.id, email: data.user.email || '' }
+          ? { id: data.user.id, email: data.user.email || "" }
           : null,
         error: null,
       };
     } catch (err: any) {
       return {
         user: null,
-        error: { message: err.message || 'An unexpected error occurred' },
+        error: { message: err.message || "An unexpected error occurred" },
       };
     }
   }
@@ -65,10 +70,10 @@ class AuthService {
 
       if (error) {
         let message = error.message;
-        if (error.message.includes('Invalid login credentials')) {
-          message = 'Invalid email or password. Please try again.';
-        } else if (error.message.includes('Email not confirmed')) {
-          message = 'Please verify your email before signing in.';
+        if (error.message.includes("Invalid login credentials")) {
+          message = "Invalid email or password. Please try again.";
+        } else if (error.message.includes("Email not confirmed")) {
+          message = "Please verify your email before signing in.";
         }
 
         return {
@@ -79,14 +84,14 @@ class AuthService {
 
       return {
         user: data.user
-          ? { id: data.user.id, email: data.user.email || '' }
+          ? { id: data.user.id, email: data.user.email || "" }
           : null,
         error: null,
       };
     } catch (err: any) {
       return {
         user: null,
-        error: { message: err.message || 'An unexpected error occurred' },
+        error: { message: err.message || "An unexpected error occurred" },
       };
     }
   }
@@ -103,7 +108,7 @@ class AuthService {
       return { error: null };
     } catch (err: any) {
       return {
-        error: { message: err.message || 'An unexpected error occurred' },
+        error: { message: err.message || "An unexpected error occurred" },
       };
     }
   }
@@ -120,7 +125,6 @@ class AuthService {
       if (error) throw error;
       return session;
     } catch (err) {
-      console.error('Error getting session:', err);
       return null;
     }
   }
@@ -135,9 +139,8 @@ class AuthService {
         error,
       } = await supabase.auth.getUser();
       if (error) throw error;
-      return user ? { id: user.id, email: user.email || '' } : null;
+      return user ? { id: user.id, email: user.email || "" } : null;
     } catch (err) {
-      console.error('Error getting user:', err);
       return null;
     }
   }

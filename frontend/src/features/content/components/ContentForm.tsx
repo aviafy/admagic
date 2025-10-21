@@ -72,7 +72,6 @@ export function ContentForm({ onSubmissionCreated }: ContentFormProps) {
       setContentUrl("");
     } catch (err) {
       // Error is already set in the hook
-      console.error("Submission error:", err);
     }
   };
 

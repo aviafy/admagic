@@ -13,10 +13,7 @@ export default () => ({
     apiKey: process.env.GEMINI_API_KEY,
   },
   jwt: {
-    secret:
-      process.env.SUPABASE_JWT_SECRET ||
-      process.env.JWT_SECRET ||
-      "default-secret-change-in-production",
+    secret: process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || "1d",
   },
   cors: {

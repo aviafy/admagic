@@ -35,7 +35,7 @@ export class ModerationService {
 
     this.logger.log(
       `Moderation service initialized - Gemini: ${
-        this.agent.isGeminiAvailable() ? "✅" : "❌"
+        this.agent.isGeminiAvailable() ? "Available" : "Not Available"
       }`
     );
 
@@ -52,7 +52,7 @@ export class ModerationService {
   ): Promise<ModerationResult> {
     this.costs.totalRequests++;
     this.logger.log(
-      `🟣 [ModerationService] Moderating ${contentType} content with provider: ${
+      `Moderating ${contentType} content with provider: ${
         preferredProvider || "default (OpenAI)"
       }`
     );
@@ -66,7 +66,7 @@ export class ModerationService {
       if (cachedResult) {
         this.costs.cachedRequests++;
         this.logger.log(
-          `💾 [ModerationService] Using cached moderation result (saved AI API call) - Used provider: ${cachedResult.aiProvider}`
+          `Using cached moderation result (saved AI API call) - Used provider: ${cachedResult.aiProvider}`
         );
         return cachedResult;
       }
@@ -74,7 +74,7 @@ export class ModerationService {
       // No cache hit - call AI with preferred provider
       this.costs.aiRequests++;
       this.logger.log(
-        `🔧 [ModerationService] No cache hit. Creating/using agent with provider: ${
+        `No cache hit. Creating/using agent with provider: ${
           preferredProvider || AIProvider.OPENAI
         }`
       );
@@ -83,7 +83,7 @@ export class ModerationService {
       let agentToUse = this.agent;
       if (preferredProvider && preferredProvider !== AIProvider.OPENAI) {
         this.logger.log(
-          `⚡ [ModerationService] Creating NEW agent instance for provider: ${preferredProvider}`
+          `Creating new agent instance for provider: ${preferredProvider}`
         );
         const openaiKey = this.configService.get<string>("openai.apiKey");
         const geminiKey = this.configService.get<string>("gemini.apiKey");
@@ -93,18 +93,16 @@ export class ModerationService {
           preferredProvider
         );
         this.logger.log(
-          `✅ [ModerationService] New agent created with preferred provider: ${preferredProvider}`
+          `New agent created with preferred provider: ${preferredProvider}`
         );
       } else {
-        this.logger.log(
-          `♻️  [ModerationService] Using existing default agent (OpenAI)`
-        );
+        this.logger.log(`Using existing default agent (OpenAI)`);
       }
 
-      this.logger.log(`🚀 [ModerationService] Calling agent.moderate()...`);
+      this.logger.log(`Calling agent.moderate()...`);
       const result = await agentToUse.moderate(content, contentType);
       this.logger.log(
-        `✅ [ModerationService] Agent returned result with provider: ${result.aiProvider}`
+        `Agent returned result with provider: ${result.aiProvider}`
       );
 
       if (!result.decision || !result.reasoning) {

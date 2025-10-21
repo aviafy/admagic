@@ -62,7 +62,7 @@ export class DecisionService {
    * Builds approval message
    */
   private buildApprovedMessage(aiProvider: AIProvider): string {
-    return `✅ Content approved. Your content meets all community guidelines and safety standards.`;
+    return `Content approved. Your content meets all community guidelines and safety standards.`;
   }
 
   /**
@@ -79,7 +79,7 @@ export class DecisionService {
       `Your content has been flagged for manual review due to potential concerns: ${concernsList}. ` +
         `This content will be reviewed by our moderation team before publication.`;
 
-    return `⚠️ ${userMessage}`;
+    return `${userMessage}`;
   }
 
   /**
@@ -98,7 +98,7 @@ export class DecisionService {
       userMessage = this.getViolationSpecificMessage(concerns, concernsList);
     }
 
-    return `❌ ${userMessage}`;
+    return `${userMessage}`;
   }
 
   /**

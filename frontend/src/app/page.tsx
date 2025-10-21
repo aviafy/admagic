@@ -61,14 +61,8 @@ export default function Home() {
           lastSubmissionId
         );
 
-        console.log(`Page polling attempt ${pollAttempts}: ${status.status}`);
-
         // Stop polling if status is no longer pending
         if (status.status !== "pending") {
-          console.log(
-            "Status resolved, stopping page-level polling and refreshing feed"
-          );
-
           // CRITICAL FIX: Refetch the feed to ensure updated status is displayed
           // This is the fallback in case Realtime subscription didn't trigger
           refetch();
@@ -83,13 +77,9 @@ export default function Home() {
           pollTimeoutRef.current = setTimeout(pollSubmissionStatus, interval);
         } else {
           // Stop polling after max attempts (real-time will take over)
-          console.log(
-            "Max polling attempts reached, relying on real-time updates"
-          );
           setLastSubmissionId(null);
         }
       } catch (error) {
-        console.error("Error polling submission status:", error);
         setLastSubmissionId(null);
       }
     };

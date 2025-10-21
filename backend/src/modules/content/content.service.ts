@@ -69,13 +69,9 @@ export class ContentService {
     submissionId: string,
     submitDto: SubmitContentDto
   ): Promise<void> {
+    this.logger.log(`Processing moderation for submission: ${submissionId}`);
     this.logger.log(
-      `🟢 [ContentService] Processing moderation for submission: ${submissionId}`
-    );
-    this.logger.log(
-      `🤖 [ContentService] Requested AI provider: ${
-        submitDto.aiProvider || "default (OpenAI)"
-      }`
+      `Requested AI provider: ${submitDto.aiProvider || "default (OpenAI)"}`
     );
 
     try {
@@ -84,7 +80,7 @@ export class ContentService {
 
       // Run moderation agent with preferred AI provider
       this.logger.log(
-        `📤 [ContentService] Calling moderationService with provider: ${submitDto.aiProvider}`
+        `Calling moderationService with provider: ${submitDto.aiProvider}`
       );
       const result = await this.moderationService.moderateContent(
         content,
@@ -92,7 +88,7 @@ export class ContentService {
         submitDto.aiProvider
       );
       this.logger.log(
-        `📥 [ContentService] Moderation result received - Decision: ${result.decision}, Used provider: ${result.aiProvider}`
+        `Moderation result received - Decision: ${result.decision}, Used provider: ${result.aiProvider}`
       );
 
       // Map decision to status

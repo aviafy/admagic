@@ -246,3 +246,11 @@ Expected results:
 - Conditional edges return the next node name as a string
 - Special node names: `__start__` and `__end__` are reserved by LangGraph
 - Error handling ensures workflow doesn't fail if image generation fails
+
+## Related Documentation
+
+For comprehensive documentation on the moderation agent, see:
+
+- **[Moderation Agent Documentation](./MODERATION_AGENT.md)** - Complete implementation guide
+- **[Gemini Integration Guide](./GEMINI_INTEGRATION_GUIDE.md)** - Multi-provider support
+- **[Image Generation Feature](./IMAGE_GENERATION_FEATURE.md)** - DALL-E integration details

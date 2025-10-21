@@ -208,5 +208,5 @@ User submits for moderation
 ## Related Documentation
 
 - [DALL-E 3 API Documentation](https://platform.openai.com/docs/guides/images)
-- [Content Moderation Flow](./LANGGRAPH_AGENT_DOCUMENTATION.md)
+- [Content Moderation Flow](./MODERATION_AGENT.md)
 - [Authentication Guide](./authentication.md)

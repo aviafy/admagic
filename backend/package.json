@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-Powered Content Moderation Backend - NestJS with LangGraph",
   "main": "index.js",
   "scripts": {
     "prebuild": "rimraf dist",
@@ -11,8 +11,15 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nestjs",
+    "content-moderation",
+    "ai",
+    "langgraph",
+    "openai",
+    "gemini"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

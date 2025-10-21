@@ -1,4 +1,4 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 export interface AuthenticatedUser {
   userId: string;
@@ -12,12 +12,12 @@ export interface AuthenticatedUser {
  * @UseGuards(JwtAuthGuard)
  * @Post('submit')
  * submitContent(@CurrentUser() user: AuthenticatedUser) {
- *   console.log(user.userId); // Access authenticated user ID
+ *   // Access authenticated user ID via user.userId
  * }
  */
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): AuthenticatedUser => {
     const request = ctx.switchToHttp().getRequest();
     return request.user;
-  },
+  }
 );

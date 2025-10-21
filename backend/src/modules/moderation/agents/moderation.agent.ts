@@ -35,7 +35,7 @@ export class ModerationAgent {
     preferredProvider: AIProvider = AIProvider.OPENAI
   ) {
     this.logger.log(
-      `🏗️  [ModerationAgent] Constructor called with preferredProvider: ${preferredProvider}`
+      `Constructor called with preferredProvider: ${preferredProvider}`
     );
 
     const openaiModel = new ChatOpenAI({
@@ -51,16 +51,14 @@ export class ModerationAgent {
     // Initialize Gemini if key provided
     if (geminiKey) {
       this.gemini = new GoogleGenerativeAI(geminiKey);
-      this.logger.log("✅ [ModerationAgent] Gemini AI initialized");
+      this.logger.log("Gemini AI initialized");
     } else {
-      this.logger.warn(
-        "⚠️ [ModerationAgent] Gemini API key not provided, using OpenAI only"
-      );
+      this.logger.warn("Gemini API key not provided, using OpenAI only");
     }
 
     // Initialize services
     this.logger.log(
-      `🔧 [ModerationAgent] Initializing services with preferredProvider: ${preferredProvider}`
+      `Initializing services with preferredProvider: ${preferredProvider}`
     );
     this.visionAnalyzer = new VisionAnalyzerService(openai, this.gemini);
     this.contentAnalyzer = new ContentAnalyzerService(
@@ -76,7 +74,7 @@ export class ModerationAgent {
     this.decisionService = new DecisionService();
 
     this.logger.log(
-      `✅ [ModerationAgent] Moderation agent initialized with preferred provider: ${preferredProvider}`
+      `Moderation agent initialized with preferred provider: ${preferredProvider}`
     );
 
     this.buildGraph();
@@ -124,9 +122,7 @@ export class ModerationAgent {
   private async analyzeNode(
     state: ModerationState
   ): Promise<Partial<ModerationState>> {
-    this.logger.log(
-      `📊 [ModerationAgent.analyzeNode] Analyzing ${state.contentType} content`
-    );
+    this.logger.log(`Analyzing ${state.contentType} content`);
 
     // For images, try vision analysis first
     if (state.contentType === ContentType.IMAGE) {
@@ -134,13 +130,9 @@ export class ModerationAgent {
 
       if (imageUrl.startsWith("http") || imageUrl.startsWith("data:image")) {
         try {
-          this.logger.log(
-            `👁️  [ModerationAgent.analyzeNode] Using Vision Model for image`
-          );
+          this.logger.log(`Using Vision Model for image`);
           const visionResult = await this.visionAnalyzer.analyzeImage(imageUrl);
-          this.logger.log(
-            "✅ [ModerationAgent.analyzeNode] Vision analysis complete - Using OpenAI"
-          );
+          this.logger.log("Vision analysis complete - Using OpenAI");
 
           return {
             analysisResult: visionResult,
@@ -148,7 +140,7 @@ export class ModerationAgent {
           };
         } catch (error) {
           this.logger.warn(
-            "⚠️ [ModerationAgent.analyzeNode] Vision analysis failed, falling back to text analysis",
+            "Vision analysis failed, falling back to text analysis",
             error
           );
         }
@@ -156,16 +148,12 @@ export class ModerationAgent {
     }
 
     // Text/URL content analysis
-    this.logger.log(
-      `🤖 [ModerationAgent.analyzeNode] Calling ContentAnalyzer.analyze()...`
-    );
+    this.logger.log(`Calling ContentAnalyzer.analyze()...`);
     const { result, provider } = await this.contentAnalyzer.analyze(
       state.content,
       state.contentType
     );
-    this.logger.log(
-      `✅ [ModerationAgent.analyzeNode] Analysis complete with provider: ${provider}`
-    );
+    this.logger.log(`Analysis complete with provider: ${provider}`);
 
     return {
       analysisResult: result,

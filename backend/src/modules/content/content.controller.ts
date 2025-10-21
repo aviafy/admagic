@@ -43,11 +43,11 @@ export class ContentController {
     @Body() submitDto: SubmitContentDto
   ): Promise<SubmitResponseDto> {
     this.logger.log(
-      `🔵 [Controller] Received content submission from user: ${
+      `Received content submission from user: ${
         user.userId
       } with AI provider: ${submitDto.aiProvider || "default"}`
     );
-    this.logger.debug(`📦 [Controller] SubmitDto:`, JSON.stringify(submitDto));
+    this.logger.debug(`SubmitDto: ${JSON.stringify(submitDto)}`);
     // Use authenticated user ID instead of request body
     return await this.contentService.submitContent(user.userId, submitDto);
   }

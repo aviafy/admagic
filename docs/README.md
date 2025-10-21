@@ -7,6 +7,7 @@ Complete API reference for the AI-Powered Content Moderation system.
 ### Implementation Guides
 
 - **[Authentication](./authentication.md)** - JWT implementation and security guide
+- **[Moderation Agent](./MODERATION_AGENT.md)** - LangGraph-based content moderation system
 - **[Performance Optimization](./performance-optimization.md)** - Caching, rate limiting, and cost optimization
 - **[TypeScript Strict Mode](./typescript-strict-mode.md)** - Type safety implementation
 
@@ -329,5 +330,6 @@ curl http://localhost:3001/monitoring/metrics
 
 - **Main README:** [../README.md](../README.md)
 - **Authentication Guide:** [authentication.md](./authentication.md)
+- **Moderation Agent:** [MODERATION_AGENT.md](./MODERATION_AGENT.md)
 - **Performance Guide:** [performance-optimization.md](./performance-optimization.md)
 - **TypeScript Guide:** [typescript-strict-mode.md](./typescript-strict-mode.md)

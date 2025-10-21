@@ -206,7 +206,6 @@ export function CreatePostCard({
       setDetectedImageUrl(result.imageUrl);
       setForceImageUrl(true);
     } catch (err) {
-      console.error("Image generation error:", err);
       setGenerationError(
         err instanceof Error ? err.message : "Failed to generate image"
       );
@@ -236,7 +235,6 @@ export function CreatePostCard({
       });
       setDetectedImageUrl(result.imageUrl);
     } catch (err) {
-      console.error("Image regeneration error:", err);
       setGenerationError(
         err instanceof Error ? err.message : "Failed to regenerate image"
       );
@@ -261,7 +259,6 @@ export function CreatePostCard({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Download failed:", err);
       setGenerationError("Failed to download image");
     }
   };
@@ -337,17 +334,12 @@ export function CreatePostCard({
 
     try {
       // Submit to backend
-      console.log(
-        "🚀 [Frontend] Submitting content with AI provider:",
-        provider
-      );
       const response = await submitContent({
         contentType: finalContentType,
         contentText: finalContentText,
         contentUrl,
         aiProvider: provider,
       });
-      console.log("✅ [Frontend] Submission response received:", response);
 
       // When backend responds, replace optimistic post with real one
       // The real post will come via real-time subscription, but we still notify parent
@@ -356,7 +348,6 @@ export function CreatePostCard({
       // Note: The real-time subscription will handle replacing the optimistic post
       // with the actual post from the database, so we don't need to manually replace here
     } catch (err) {
-      console.error("Submission error:", err);
       // Remove optimistic post if submission failed
       onSubmissionError(optimisticId);
 

@@ -3,12 +3,12 @@
  * Manages content submission and status polling
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { contentService } from '../services/contentService';
-import { POLL_INTERVAL_MS } from '@/config/constants';
-import type { ContentStatusResponse, SubmitContentDto } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { contentService } from "../services/contentService";
+import { POLL_INTERVAL_MS } from "@/config/constants";
+import type { ContentStatusResponse, SubmitContentDto } from "../types";
 
 export function useContentSubmission() {
   const [submissionId, setSubmissionId] = useState<string | null>(null);
@@ -72,22 +72,19 @@ export function useContentSubmission() {
         setStatus(statusData);
 
         // Continue polling if status is still pending and under max attempts
-        if (statusData.status === 'pending' && pollAttempts < MAX_POLL_ATTEMPTS) {
+        if (
+          statusData.status === "pending" &&
+          pollAttempts < MAX_POLL_ATTEMPTS
+        ) {
           const interval = getPollingInterval(pollAttempts);
           timeoutId = setTimeout(fetchStatus, interval);
-          console.log(
-            `Polling attempt ${pollAttempts}/${MAX_POLL_ATTEMPTS}, next check in ${interval}ms`
-          );
-        } else if (statusData.status !== 'pending') {
-          console.log(`Moderation complete: ${statusData.status}`);
         } else if (pollAttempts >= MAX_POLL_ATTEMPTS) {
           setError(
-            'Moderation is taking longer than expected. The status will update automatically when complete.'
+            "Moderation is taking longer than expected. The status will update automatically when complete."
           );
         }
       } catch (err: any) {
         if (!isMounted) return;
-        console.error('Error fetching submission status:', err);
         setError(err.message);
       } finally {
         isPolling = false;
